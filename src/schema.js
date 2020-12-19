@@ -219,6 +219,35 @@ const schema = {
         },
       ],
     },
+    {
+      name: "Response",
+      description: "Settings related to the response rendering",
+      enabled: true,
+      key: "response",
+      kind: "ARC#ConfigGroup",
+      items: [
+        {
+          kind: "ARC#ConfigItem",
+          enabled: true,
+          name: "Force raw view size limit",
+          description: "A limit after which the response is not highlighted.",
+          key: "response.forceRawSize",
+          default: 4096,
+          type: "number",
+          suffix: 'KB',
+        },
+        {
+          kind: "ARC#ConfigItem",
+          enabled: true,
+          name: "Response size warning limit",
+          description: "When to show a response size warning before rendering.",
+          key: "response.warningResponseMaxSize",
+          default: 2048,
+          type: "number",
+          suffix: 'KB',
+        },
+      ],
+    }
   ],
 };
 Object.freeze(schema);
