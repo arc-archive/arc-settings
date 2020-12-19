@@ -1,0 +1,7 @@
+coverage/
+test/
+demo/
+.vscode/
+CONTRIBUTING.md
+.*
+tsconfig.json
