@@ -2,6 +2,10 @@
 
 Settings view for the Advanced REST Client. This element contains the settings screen and supporting logic for ARC.
 
+[![Published on NPM](https://img.shields.io/npm/v/@advanced-rest-client/arc-settings.svg)](https://www.npmjs.com/package/@advanced-rest-client/arc-settings)
+
+[![Tests and publishing](https://github.com/advanced-rest-client/arc-settings/actions/workflows/deployment.yml/badge.svg)](https://github.com/advanced-rest-client/arc-settings/actions/workflows/deployment.yml)
+
 ## Usage
 
 ### Installation
