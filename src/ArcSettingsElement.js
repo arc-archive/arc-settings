@@ -348,7 +348,7 @@ export class ArcSettingsElement extends LitElement {
     <anypoint-item ?disabled="${!enabled}" data-href="${target}" @click="${this[linkItemHandler]}">
       <anypoint-item-body ?twoline="${twoLine}" ?compatibility="${compatibility}">
         ${name}
-        ${twoLine? html`<div secondary>${description}</div>` : ''}
+        ${twoLine? html`<div data-secondary>${description}</div>` : ''}
       </anypoint-item-body>
       <arc-icon class="sub-page-arrow" icon="openInNew" title="Opens in a new window"></arc-icon>  
     </anypoint-item>
@@ -368,7 +368,7 @@ export class ArcSettingsElement extends LitElement {
     <anypoint-item @click="${this[toggleItemHandler]}" ?disabled="${!enabled}" @focus="${this[redirectToggleFocus]}" data-path="${key}">
       <anypoint-item-body ?twoline="${twoLine}" ?compatibility="${compatibility}">
         <div>${name}</div>
-        ${twoLine? html`<div secondary>${description}</div>` : ''}
+        ${twoLine? html`<div data-secondary>${description}</div>` : ''}
       </anypoint-item-body>
       <anypoint-switch
         tabindex="-1"
@@ -397,7 +397,7 @@ export class ArcSettingsElement extends LitElement {
     <anypoint-item ?disabled="${!enabled}" data-path="${key}">
       <anypoint-item-body ?twoline="${twoLine}" ?compatibility="${compatibility}">
         <div>${name}</div>
-        ${twoLine? html`<div secondary>${description}</div>` : ''}
+        ${twoLine? html`<div data-secondary>${description}</div>` : ''}
       </anypoint-item-body>
       ${enumValue ? this[dropdownOptions](value, enumValue, key) : this[subPageLinkItem](key)}
     </anypoint-item>

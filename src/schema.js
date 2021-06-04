@@ -220,16 +220,6 @@ const schema = {
         {
           kind: "ARC#ConfigItem",
           enabled: true,
-          name: "Body editor",
-          description: "The editor to use with the body editor.",
-          key: "requestEditor.bodyEditor",
-          type: "string",
-          default: "Monaco",
-          enum: ["Monaco", "CodeMirror"],
-        },
-        {
-          kind: "ARC#ConfigItem",
-          enabled: true,
           name: "Render the send and abort buttons",
           description: "Whether to render the send button in the request editor.",
           key: "requestEditor.sendButton",

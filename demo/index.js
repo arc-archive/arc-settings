@@ -9,7 +9,7 @@ import '@advanced-rest-client/arc-models/auth-data-model.js';
 import '@advanced-rest-client/arc-models/host-rules-model.js';
 import '@advanced-rest-client/arc-models/rest-api-model.js';
 import '@advanced-rest-client/arc-models/variables-model.js';
-import '@advanced-rest-client/arc-ie/arc-data-export.js';
+import '@advanced-rest-client/arc-models/arc-data-export.js';
 import listenEncoding from '@advanced-rest-client/arc-demo-helper/src/EncodingHelpers.js';
 import { ExportHandlerMixin } from '@advanced-rest-client/arc-demo-helper/src/ExportHandlerMixin.js';
 import { ArcNavigationEventTypes, ConfigEvents, ConfigEventTypes } from '@advanced-rest-client/arc-events';
