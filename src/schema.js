@@ -148,6 +148,15 @@ const schema = {
           type: "string",
           default: "https://auth.advancedrestclient.com/oauth-popup.html",
         },
+        {
+          kind: "ARC#ConfigItem",
+          enabled: true,
+          name: "Read OS' hosts file",
+          description: "Passes the operating system's hosts list to the request engine.",
+          key: "request.readOsHosts",
+          type: "boolean",
+          default: false,
+        },
       ],
     },
     {

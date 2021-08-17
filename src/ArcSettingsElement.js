@@ -54,7 +54,7 @@ export class ArcSettingsElement extends LitElement {
       /** 
        * The current application settings
        */
-      appSettings: { type: Boolean },
+      appSettings: { type: Object },
       /** 
        * Enables compatibility layer with the anypoint platform
        */

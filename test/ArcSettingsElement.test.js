@@ -265,4 +265,27 @@ describe('ArcSettingsElement', () => {
       assert.isUndefined(element.subPageItem)
     });
   });
+
+  describe('HTTP request configuration', () => {
+    let element = /** @type ArcSettingsElement */ (null);
+    beforeEach(async () => { element = await basicFixture() });
+
+    [
+      'request.timeout',
+      'request.followRedirects',
+      'request.useSystemVariables',
+      'request.useAppVariables',
+      'request.ignoreContentOnGet',
+      'request.defaultHeaders',
+      'request.ignoreSessionCookies',
+      'request.validateCertificates',
+      'request.oauth2redirectUri',
+      'request.readOsHosts',
+    ].forEach((key) => {
+      it(`renders the ${key} option`, () => {
+        const item = element.shadowRoot.querySelector(`anypoint-item[data-path="${key}"]`);
+        assert.ok(item);
+      });
+    });
+  });
 });
