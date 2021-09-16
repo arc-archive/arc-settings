@@ -40,7 +40,7 @@ describe('ArcSettingsElement', () => {
 
     it('renders all settings sections', () => {
       const nodes = element.shadowRoot.querySelectorAll('.settings-group');
-      assert.lengthOf(nodes, 6);
+      assert.lengthOf(nodes, 7);
     });
 
     it('renders a section title', () => {

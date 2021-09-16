@@ -1,15 +1,6 @@
 
 import { html } from 'lit-html';
 import { DemoPage } from '@advanced-rest-client/arc-demo-helper';
-import '@advanced-rest-client/arc-models/project-model.js';
-import '@advanced-rest-client/arc-models/request-model.js';
-import '@advanced-rest-client/arc-models/url-history-model.js';
-import '@advanced-rest-client/arc-models/websocket-url-history-model.js';
-import '@advanced-rest-client/arc-models/auth-data-model.js';
-import '@advanced-rest-client/arc-models/host-rules-model.js';
-import '@advanced-rest-client/arc-models/rest-api-model.js';
-import '@advanced-rest-client/arc-models/variables-model.js';
-import '@advanced-rest-client/arc-models/arc-data-export.js';
 import listenEncoding from '@advanced-rest-client/arc-demo-helper/src/EncodingHelpers.js';
 import { ExportHandlerMixin } from '@advanced-rest-client/arc-demo-helper/src/ExportHandlerMixin.js';
 import { ArcNavigationEventTypes, ConfigEvents, ConfigEventTypes } from '@advanced-rest-client/arc-events';
@@ -114,16 +105,6 @@ class ComponentDemo extends ExportHandlerMixin(DemoPage) {
 
   contentTemplate() {
     return html`
-      <arc-data-export></arc-data-export>
-      <project-model></project-model>
-      <request-model></request-model>
-      <auth-data-model></auth-data-model>
-      <url-history-model></url-history-model>
-      <websocket-url-history-model></websocket-url-history-model>
-      <rest-api-model></rest-api-model>
-      <variables-model></variables-model>
-      <host-rules-model></host-rules-model>
-
       ${this._demoTemplate()}
       ${this.exportTemplate()}
     `;
