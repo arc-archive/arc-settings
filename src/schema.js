@@ -199,6 +199,15 @@ const schema = {
         {
           kind: "ARC#ConfigItem",
           enabled: true,
+          name: "Proxy settings enabled",
+          description: "Enables or disables proxy settings.",
+          key: "proxy.enabled",
+          default: false,
+          type: "boolean",
+        },
+        {
+          kind: "ARC#ConfigItem",
+          enabled: true,
           name: "Proxy URL",
           description: "The IP or URL of the proxy to use.",
           key: "proxy.url",
