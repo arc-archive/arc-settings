@@ -2,7 +2,6 @@
 import { html } from 'lit-html';
 import { DemoPage } from '@advanced-rest-client/arc-demo-helper';
 import listenEncoding from '@advanced-rest-client/arc-demo-helper/src/EncodingHelpers.js';
-import { ExportHandlerMixin } from '@advanced-rest-client/arc-demo-helper/src/ExportHandlerMixin.js';
 import { ArcNavigationEventTypes, ConfigEvents, ConfigEventTypes } from '@advanced-rest-client/arc-events';
 import '../arc-settings.js';
 
@@ -12,7 +11,7 @@ import '../arc-settings.js';
 
 const STORE_CONFIG_KEY = 'arc.demo.settings';
 
-class ComponentDemo extends ExportHandlerMixin(DemoPage) {
+class ComponentDemo extends DemoPage {
   constructor() {
     super();
     this.initObservableProperties([
@@ -106,7 +105,6 @@ class ComponentDemo extends ExportHandlerMixin(DemoPage) {
   contentTemplate() {
     return html`
       ${this._demoTemplate()}
-      ${this.exportTemplate()}
     `;
   }
 }

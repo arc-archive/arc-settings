@@ -4,11 +4,13 @@ import { ArcNavigationEvents, ConfigEvents } from '@advanced-rest-client/arc-eve
 import '@anypoint-web-components/anypoint-item/anypoint-item.js';
 import '@anypoint-web-components/anypoint-item/anypoint-item-body.js';
 import '@anypoint-web-components/anypoint-input/anypoint-input.js';
+import '@anypoint-web-components/anypoint-input/anypoint-masked-input.js';
 import '@anypoint-web-components/anypoint-switch/anypoint-switch.js';
 import '@anypoint-web-components/anypoint-button/anypoint-icon-button.js';
 import '@advanced-rest-client/arc-icons/arc-icon.js';
 import '@anypoint-web-components/anypoint-dropdown-menu/anypoint-dropdown-menu.js';
 import '@anypoint-web-components/anypoint-listbox/anypoint-listbox.js';
+import { ArcScrollTargetMixin } from '@advanced-rest-client/arc-scroll-target-mixin';
 import elementStyles from './settings.css.js';
 import schema from './schema.js';
 
@@ -19,6 +21,7 @@ import schema from './schema.js';
 /** @typedef {import('./types').ArcConfigItem} ArcConfigItem */
 /** @typedef {import('./types').ArcConfigGroup} ArcConfigGroup */
 /** @typedef {import('./types').ArcLinkItem} ArcLinkItem */
+/** @typedef {import('./types').SettingsPage} SettingsPage */
 
 export const subPageLinkHandler = Symbol('subPageLinkHandler');
 export const subPageLinkItem = Symbol('subPageLinkItem');
@@ -37,10 +40,18 @@ export const inputChangeHandler = Symbol('inputChangeHandler');
 export const backSubPage = Symbol('backSubPage');
 export const subPageTemplate = Symbol('subPageTemplate');
 export const schemaTemplate = Symbol('schemaTemplate');
+export const configGroupItem = Symbol('configGroupItem');
+export const subPageInputTemplate = Symbol('subPageItemTemplate');
+export const subPageMaskedInputTemplate = Symbol('subPageMaskedInputTemplate');
+export const subPageGroupTemplate = Symbol('subPageGroupTemplate');
+export const pageSectionItem = Symbol('pageSectionItem');
+export const inputSectionTemplate = Symbol('inputSectionTemplate');
+export const booleanSectionTemplate = Symbol('booleanSectionTemplate');
+export const subPageClickHandler = Symbol('subPageClickHandler');
 
-const SupportedConfigItems = ['ARC#LinkItem', 'ARC#ConfigItem'];
+const SupportedConfigItems = ['ARC#LinkItem', 'ARC#ConfigItem', 'ARC#ConfigGroup'];
 
-export class ArcSettingsElement extends LitElement {
+export class ArcSettingsElement extends ArcScrollTargetMixin(LitElement) {
   static get styles() {
     return elementStyles;
   }
@@ -66,6 +77,17 @@ export class ArcSettingsElement extends LitElement {
     };
   }
 
+  /**
+   * @returns {SettingsPage|null} The currently rendered sub page's schema or null when rendering the top view.
+   */
+  get currentPage() {
+    const { pages } = this;
+    if (!Array.isArray(pages) || !pages.length) {
+      return null;
+    }
+    return pages[pages.length - 1];
+  }
+
   constructor() {
     super();
     this.settingsReady = false;
@@ -75,14 +97,12 @@ export class ArcSettingsElement extends LitElement {
      * @type {ARCConfig}
      */
     this.appSettings = undefined;
-    /**
-     * When an item has its own sub-page then this is the item to be rendered.
-     * Once set it renders this view.
-     * Note, you have to call `requestUpdate()` manually after setting this variable.
-     * 
-     * @type {ArcConfigItem}
+    /** 
+     * The list of currently opened setting pages.
+     * The last item in the array is the rendered item.
+     * @type {SettingsPage[]}
      */
-    this.subPageItem = undefined;
+    this.pages = [];
   }
 
   connectedCallback() {
@@ -208,11 +228,21 @@ export class ArcSettingsElement extends LitElement {
    * @param {Event} e 
    */
   [subPageLinkHandler](e) {
+    e.stopPropagation();
+    e.preventDefault();
     const node = /** @type HTMLElement */ (e.currentTarget);
     const { dataset } = node;
     const { path } = dataset;
-    const item = this.readConfigItemSchema(path);
-    this.subPageItem = item;
+    const page = this.readConfigItemSchema(path);
+    const { scrollTarget } = this;
+    const scrollPosition = /** @type HTMLElement */ (scrollTarget).scrollTop;
+    if (!Array.isArray(this.pages)) {
+      this.pages = [];
+    }
+    this.pages.push({
+      page,
+      scrollPosition,
+    });
     this.requestUpdate();
   }
 
@@ -229,9 +259,15 @@ export class ArcSettingsElement extends LitElement {
   /**
    * Clears the current sub page and returns to the default view.
    */
-  [backSubPage]() {
-    this.subPageItem = undefined;
-    this.requestUpdate();
+  async [backSubPage]() {
+    if (!Array.isArray(this.pages)) {
+      return;
+    }
+    const removed = this.pages.pop();
+    await this.requestUpdate();
+    if (removed.scrollPosition) {
+      this._scrollTop = removed.scrollPosition;
+    }
   }
 
   /**
@@ -244,14 +280,24 @@ export class ArcSettingsElement extends LitElement {
     ArcNavigationEvents.navigateExternal(this, href);
   }
 
+  /**
+   * @param {Event} e
+   */
+  [subPageClickHandler](e) {
+    const button = /** @type HTMLElement */ (/** @type Element */ (e.currentTarget).nextElementSibling);
+    if (button) {
+      button.click();
+    }
+  }
+
   render() {
-    const { settingsReady, subPageItem } = this;
+    const { settingsReady, currentPage } = this;
     if (!settingsReady) {
       return html`<p>Initializing...</p>`;
     }
     return html`
     <div class="content">
-      ${subPageItem ? this[subPageTemplate]() : this[schemaTemplate]()}
+      ${currentPage ? this[subPageTemplate]() : this[schemaTemplate]()}
     </div>`;
   }
 
@@ -270,10 +316,9 @@ export class ArcSettingsElement extends LitElement {
    * @returns {TemplateResult} The template for the selected sub page.
    */
   [subPageTemplate]() {
-    const { subPageItem, compatibility, outlined } = this;
-    const { name, description, type, enabled, key, default: defaultValue, suffix } = subPageItem;
-    const inputType = type === 'number' ? type : 'text';
-    const value = this.readValue(key, defaultValue);
+    const { currentPage } = this;
+    const { name, description, kind } = currentPage.page;
+    const isGroup = kind === 'ARC#ConfigGroup';
     return html`
     <div class="settings-page">
       <div class="title-line">
@@ -283,14 +328,65 @@ export class ArcSettingsElement extends LitElement {
         <h3 class="settings-title">${name}</h3>
       </div>
       <p class="settings-description">${description}</p>
-
-      <div class="user-input">
-        <anypoint-input type="${inputType}" .disabled="${!enabled}" .value="${value}" data-path="${key}" @change="${this[inputChangeHandler]}" ?compatibility="${compatibility}" ?outlined="${outlined}">
-          <label slot="label">Setting value</label>
-          ${suffix ? html`<span slot="suffix">${suffix}</span>` : ''}
-        </anypoint-input>
-      </div>
+      ${isGroup ? this[subPageGroupTemplate](/** @type ArcConfigGroup */ (currentPage.page)) : this[subPageInputTemplate](/** @type ArcConfigItem */ (currentPage.page))}
     </div>
+    `;
+  }
+
+  /**
+   * @param {ArcConfigItem} item The configuration schema.
+   * @return {TemplateResult} The template for the single sub-page config item. 
+   */
+  [subPageInputTemplate](item) {
+    if (item.type === 'password') {
+      return this[subPageMaskedInputTemplate](item);
+    }
+    const { compatibility, outlined } = this;
+    const { type, enabled, key, default: defaultValue, suffix, } = item;
+    const inputType = type === 'number' ? type : 'text';
+    const value = this.readValue(key, defaultValue);
+    return html`
+    <div class="user-input">
+      <anypoint-input type="${inputType}" .disabled="${!enabled}" .value="${value}" data-path="${key}" @change="${this[inputChangeHandler]}" ?compatibility="${compatibility}" ?outlined="${outlined}">
+        <label slot="label">Setting value</label>
+        ${suffix ? html`<span slot="suffix">${suffix}</span>` : ''}
+      </anypoint-input>
+    </div>
+    `;
+  }
+
+  /**
+   * @param {ArcConfigItem} item The configuration schema.
+   * @return {TemplateResult} The template for the single sub-page config item. 
+   */
+  [subPageMaskedInputTemplate](item) {
+    const { compatibility, outlined } = this;
+    const { type, enabled, key, default: defaultValue, suffix, } = item;
+    const inputType = type === 'number' ? type : 'text';
+    const value = this.readValue(key, defaultValue);
+    return html`
+    <div class="user-input">
+      <anypoint-masked-input type="${inputType}" .disabled="${!enabled}" .value="${value}" data-path="${key}" @change="${this[inputChangeHandler]}" ?compatibility="${compatibility}" ?outlined="${outlined}">
+        <label slot="label">Setting value</label>
+        ${suffix ? html`<span slot="suffix">${suffix}</span>` : ''}
+      </anypoint-masked-input>
+    </div>
+    `;
+  }
+
+  /**
+   * @param {ArcConfigGroup} group The group schema.
+   * @return {TemplateResult|string} The template for a sub-page that is a group of config items. 
+   */
+  [subPageGroupTemplate](group) {
+    const { layout='list', items=[] } = group;
+    if (layout === 'list') {
+      return this[groupTemplate](group);
+    }
+    return html`
+    <section class="settings-group">
+      ${items.map(item => this[pageSectionItem](item))}
+    </section>
     `;
   }
 
@@ -299,7 +395,7 @@ export class ArcSettingsElement extends LitElement {
    * @returns {TemplateResult|string} The template for the settings group.
    */
   [groupTemplate](group) {
-    const { name, description, enabled, kind, items } = group;
+    const { name, description, enabled, kind, items=[] } = group;
     if (kind !== 'ARC#ConfigGroup' || !enabled) {
       return '';
     }
@@ -315,7 +411,7 @@ export class ArcSettingsElement extends LitElement {
   }
 
   /**
-   * @param {ArcConfigItem|ArcLinkItem} item
+   * @param {ArcConfigItem|ArcLinkItem|ArcConfigGroup} item
    * @returns {TemplateResult|string} The template for a single configuration item.
    */
   [settingsItemTemplate](item) {
@@ -327,12 +423,16 @@ export class ArcSettingsElement extends LitElement {
     if (kind === 'ARC#LinkItem') {
       return this[configLinkItem](/** @type ArcLinkItem */ (item));
     }
+    if (kind === 'ARC#ConfigGroup') {
+      return this[configGroupItem](/** @type ArcConfigGroup */ (item));
+    }
     switch (type) {
       case 'boolean': return this[booleanItemTemplate](typed);
       case 'string': 
       case 'number': 
+      case 'password': 
         return this[inputItemTemplate](typed);
-      default: return `implement me ${type}`;
+      default: return `implement list for ${type}`;
     }
   }
 
@@ -365,7 +465,12 @@ export class ArcSettingsElement extends LitElement {
     const value = this.readValue(key, defaultValue);
     const twoLine = !!description;
     return html`
-    <anypoint-item @click="${this[toggleItemHandler]}" ?disabled="${!enabled}" @focus="${this[redirectToggleFocus]}" data-path="${key}">
+    <anypoint-item 
+      @click="${this[toggleItemHandler]}" 
+      ?disabled="${!enabled}" 
+      @focus="${this[redirectToggleFocus]}" 
+      data-path="${key}"
+    >
       <anypoint-item-body ?twoline="${twoLine}" ?compatibility="${compatibility}">
         <div>${name}</div>
         ${twoLine? html`<div data-secondary>${description}</div>` : ''}
@@ -394,8 +499,11 @@ export class ArcSettingsElement extends LitElement {
     const value = this.readValue(key, defaultValue);
     const twoLine = !!description;
     return html`
-    <anypoint-item ?disabled="${!enabled}" data-path="${key}">
-      <anypoint-item-body ?twoline="${twoLine}" ?compatibility="${compatibility}">
+    <anypoint-item 
+      ?disabled="${!enabled}" 
+      data-path="${key}"
+    >
+      <anypoint-item-body ?twoline="${twoLine}" ?compatibility="${compatibility}" @click="${this[subPageClickHandler]}">
         <div>${name}</div>
         ${twoLine? html`<div data-secondary>${description}</div>` : ''}
       </anypoint-item-body>
@@ -444,5 +552,78 @@ export class ArcSettingsElement extends LitElement {
       <arc-icon class="sub-page-arrow" icon="arrowDropDown"></arc-icon>  
     </anypoint-icon-button>
     `;
+  }
+
+  /**
+   * @param {ArcConfigGroup} group The configuration group to render.
+   * @returns {TemplateResult}
+   */
+  [configGroupItem](group) {
+    const { enabled, name, description, key } = group;
+    const twoLine = !!description;
+    const { compatibility } = this;
+    return html`
+    <anypoint-item ?disabled="${!enabled}">
+      <anypoint-item-body ?twoline="${twoLine}" ?compatibility="${compatibility}" @click="${this[subPageClickHandler]}">
+        ${name}
+        ${twoLine? html`<div data-secondary>${description}</div>` : ''}
+      </anypoint-item-body>
+      ${this[subPageLinkItem](key)}
+    </anypoint-item>
+    `;
+  }
+
+  /**
+   * @param {ArcConfigGroup | ArcConfigItem | ArcLinkItem} item
+   * @return {TemplateResult|string} The template for an input that is rendered as a section and not a list item.
+   */
+  [pageSectionItem](item) {
+    const { kind } = item;
+    if (kind === 'ARC#LinkItem') {
+      return this[configLinkItem](/** @type ArcLinkItem */ (item));
+    }
+    if (kind === 'ARC#ConfigGroup') {
+      return this[configGroupItem](/** @type ArcConfigGroup */ (item));
+    }
+    const typed = /** @type ArcConfigItem */ (item);
+    switch (typed.type) {
+      case 'string': 
+      case 'number': 
+      case 'password': 
+        return this[inputSectionTemplate](typed);
+      case 'boolean': return this[booleanSectionTemplate](typed);
+      default: return `implement section input ${typed.type}`;
+    }
+  }
+
+  /**
+   * @param {ArcConfigItem} item
+   * @return {TemplateResult}
+   */
+  [inputSectionTemplate](item) {
+    const { name, description } = item;
+    return html`
+    <div class="setting-section">
+      <div class="setting-section-title">${name}</div>
+      <div class="setting-section-description">${description}</div>
+      ${this[subPageInputTemplate](item)}
+    </div>
+    `;
+  }
+
+  /**
+   * @param {ArcConfigItem} item
+   * @return {TemplateResult}
+   */
+  [booleanSectionTemplate](item) {
+    return this[booleanItemTemplate](item);
+    // const { name, description } = item;
+    // return html`
+    // <div class="setting-section">
+    //   <div class="setting-section-title">${name}</div>
+    //   <div class="setting-section-description">${description}</div>
+    //   ${this[booleanItemTemplate](item)}
+    // </div>
+    // `;
   }
 }

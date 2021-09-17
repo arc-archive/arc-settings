@@ -104,7 +104,9 @@ describe('ArcSettingsElement', () => {
 
     it('has the default value for an input', async () => {
       const item = element.readConfigItemSchema('request.timeout');
-      element.subPageItem = item;
+      element.pages.push({
+        page: item,
+      });
       await element.requestUpdate();
       const node = /** @type HTMLInputElement */ (element.shadowRoot.querySelector('anypoint-input[data-path="request.timeout"]'));
       assert.equal(node.value, '90');
@@ -135,7 +137,9 @@ describe('ArcSettingsElement', () => {
 
     it('has the default value for an input', async () => {
       const item = element.readConfigItemSchema('request.timeout');
-      element.subPageItem = item;
+      element.pages.push({
+        page: item,
+      });
       await element.requestUpdate();
       const node = /** @type HTMLInputElement */ (element.shadowRoot.querySelector('anypoint-input[data-path="request.timeout"]'));
       assert.equal(node.value, '120');
@@ -204,7 +208,9 @@ describe('ArcSettingsElement', () => {
     beforeEach(async () => { 
       element = await basicFixture();
       const item = element.readConfigItemSchema('request.timeout');
-      element.subPageItem = item;
+      element.pages.push({
+        page: item,
+      });
       await element.requestUpdate();
       input = /** @type HTMLInputElement */ (element.shadowRoot.querySelector('anypoint-input[data-path="request.timeout"]'));
     });
@@ -243,7 +249,7 @@ describe('ArcSettingsElement', () => {
     it('sets the subPageItem property', () => {
       const button = /** @type HTMLInputElement */ (element.shadowRoot.querySelector('anypoint-item[data-path="request.timeout"] anypoint-icon-button'));
       button.click();
-      assert.typeOf(element.subPageItem, 'object');
+      assert.lengthOf(element.pages, 1);
     });
 
     it('closes the sub page', async () => {
@@ -262,7 +268,7 @@ describe('ArcSettingsElement', () => {
       await element.updateComplete;
       const backButton = /** @type HTMLInputElement */ (element.shadowRoot.querySelector('.title-line anypoint-icon-button'));
       backButton.click();
-      assert.isUndefined(element.subPageItem)
+      assert.isEmpty(element.pages)
     });
   });
 
@@ -272,14 +278,14 @@ describe('ArcSettingsElement', () => {
 
     [
       'request.timeout',
-      'request.followRedirects',
-      'request.useSystemVariables',
-      'request.useAppVariables',
-      'request.ignoreContentOnGet',
-      'request.defaultHeaders',
-      'request.ignoreSessionCookies',
-      'request.validateCertificates',
-      'request.oauth2redirectUri',
+      // 'request.followRedirects',
+      // 'request.useSystemVariables',
+      // 'request.useAppVariables',
+      // 'request.ignoreContentOnGet',
+      // 'request.defaultHeaders',
+      // 'request.ignoreSessionCookies',
+      // 'request.validateCertificates',
+      // 'request.oauth2redirectUri',
       'request.readOsHosts',
     ].forEach((key) => {
       it(`renders the ${key} option`, () => {

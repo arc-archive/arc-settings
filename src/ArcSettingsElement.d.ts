@@ -1,5 +1,5 @@
 import { CSSResult, LitElement, TemplateResult } from 'lit-element';
-import { ArcConfigGroup, ArcConfigItem, ArcLinkItem } from './types';
+import { ArcConfigGroup, ArcConfigItem, ArcLinkItem, SettingsPage } from './types';
 import { ARCConfig } from '@advanced-rest-client/arc-types/src/config/ArcConfig';
 
 export declare const subPageLinkHandler: unique symbol;
@@ -19,6 +19,14 @@ export declare const inputChangeHandler: unique symbol;
 export declare const backSubPage: unique symbol;
 export declare const subPageTemplate: unique symbol;
 export declare const schemaTemplate: unique symbol;
+export declare const configGroupItem: unique symbol;
+export declare const subPageInputTemplate: unique symbol;
+export declare const subPageMaskedInputTemplate: unique symbol;
+export declare const subPageGroupTemplate: unique symbol;
+export declare const pageSectionItem: unique symbol;
+export declare const inputSectionTemplate: unique symbol;
+export declare const booleanSectionTemplate: unique symbol;
+export declare const subPageClickHandler: unique symbol;
 
 export declare class ArcSettingsElement extends LitElement {
   static get styles(): CSSResult;
@@ -43,11 +51,14 @@ export declare class ArcSettingsElement extends LitElement {
    */
   outlined: boolean;
   /**
-   * When an item has its own sub-page then this is the item to be rendered.
-   * Once set it renders this view.
-   * Note, you have to call `requestUpdate()` manually after setting this variable.
+   * @returns The currently rendered sub page's schema or null when rendering the top view.
    */
-  subPageItem?: ArcConfigItem;
+  get currentPage(): SettingsPage|null;
+  /** 
+   * The list of currently opened setting pages.
+   * The last item in the array is the rendered item.
+   */
+  pages: SettingsPage[];
 
   constructor();
 
@@ -102,9 +113,11 @@ export declare class ArcSettingsElement extends LitElement {
   /**
    * Clears the current sub page and returns to the default view.
    */
-  [backSubPage](): void;
+  [backSubPage](): Promise<void>;
 
   [linkItemHandler](e: Event): void;
+
+  [subPageClickHandler](e: Event): void;
 
   render(): TemplateResult;
 
@@ -117,6 +130,24 @@ export declare class ArcSettingsElement extends LitElement {
    * @returns The template for the selected sub page.
    */
   [subPageTemplate](): TemplateResult;
+
+  /**
+   * @param item The configuration schema.
+   * @returns The template for the single sub-page config item. 
+   */
+  [subPageInputTemplate](item: ArcConfigItem): TemplateResult;
+
+  /**
+   * @param item The configuration schema.
+   * @returns The template for the single sub-page config item. 
+   */
+  [subPageMaskedInputTemplate](item: ArcConfigItem): TemplateResult;
+
+  /**
+   * @param group The group schema.
+   * @return The template for a sub-page that is a group of config items. 
+   */
+  [subPageGroupTemplate](group: ArcConfigGroup): TemplateResult|string;
 
   /**
    * @returns The template for the settings group.
@@ -156,4 +187,16 @@ export declare class ArcSettingsElement extends LitElement {
    * @returns The template for the "open sub-page" button
    */
   [subPageLinkItem](path: string): TemplateResult;
+
+  /**
+   * @param group The configuration group to render.
+   */
+   [configGroupItem](group: ArcConfigGroup): TemplateResult;
+
+  /**
+   * @returns The template for an input that is rendered as a section and not a list item.
+   */
+  [pageSectionItem](item: ArcConfigGroup | ArcConfigItem | ArcLinkItem): TemplateResult|string;
+  [inputSectionTemplate](item: ArcConfigItem): TemplateResult;
+  [booleanSectionTemplate](item: ArcConfigItem): TemplateResult;
 }
