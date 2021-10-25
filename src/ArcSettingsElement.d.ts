@@ -28,6 +28,9 @@ export declare const inputSectionTemplate: unique symbol;
 export declare const booleanSectionTemplate: unique symbol;
 export declare const subPageClickHandler: unique symbol;
 
+/**
+ * @deprecated Use `@advanced-rest-client/app` instead.
+ */
 export declare class ArcSettingsElement extends LitElement {
   static get styles(): CSSResult;
 
